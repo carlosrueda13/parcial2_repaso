@@ -1,0 +1,137 @@
+package swing
+import javax.swing.*;
+import javax.swing.text.NumberFormatter;
+import java.awt.*;
+import java.text.NumberFormat;
+
+public class FormularioSwingIntegrado extends JFrame {
+    private JTable tabla;
+    private DefaultTableModel modeloTabla;
+
+    public FormularioSwingIntegrado() {
+        setTitle("Registro de Usuario");
+        setSize(700, 500);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        // --- Barra de menú con JCheckBoxMenuItem ---
+        JMenuBar barra = new JMenuBar();
+        JMenu menuVer = new JMenu("Ver");
+        JCheckBoxMenuItem verEditor = new JCheckBoxMenuItem("Mostrar instrucciones");
+        verEditor.setSelected(true);
+        menuVer.add(verEditor);
+        barra.add(menuVer);
+        setJMenuBar(barra);
+
+        // --- Instrucciones en EditorPane ---
+        JEditorPane instrucciones = new JEditorPane("text/html",
+                "<html><body><h3>Instrucciones</h3><p>Llena el formulario y presiona Registrar.</p></body></html>");
+        instrucciones.setEditable(false);
+
+        // Panel superior con instrucciones y separador
+        JPanel panelSuperior = new JPanel(new BorderLayout());
+        panelSuperior.add(instrucciones, BorderLayout.CENTER);
+        panelSuperior.add(new JSeparator(), BorderLayout.SOUTH);
+
+        // --- Panel con pestañas ---
+        JTabbedPane tabs = new JTabbedPane();
+
+        // Pestaña: Información personal
+        JPanel panelPersonal = new JPanel();
+        panelPersonal.setLayout(new GridLayout(6, 2, 10, 5));
+        JTextField nombreField = new JTextField();
+        JPasswordField claveField = new JPasswordField();
+        JSpinner edadSpinner = new JSpinner(new SpinnerNumberModel(18, 0, 120, 1));
+        JComboBox<String> paisCombo = new JComboBox<>(new String[]{"Colombia", "México", "Chile"});
+
+        NumberFormat formato = NumberFormat.getNumberInstance();
+        NumberFormatter formatter = new NumberFormatter(formato);
+        formatter.setAllowsInvalid(false);
+        formatter.setMinimum(0.0);
+        JFormattedTextField ingresoField = new JFormattedTextField(formatter);
+
+        panelPersonal.add(new JLabel("Nombre:"));
+        panelPersonal.add(nombreField);
+        panelPersonal.add(new JLabel("Contraseña:"));
+        panelPersonal.add(claveField);
+        panelPersonal.add(new JLabel("Edad:"));
+        panelPersonal.add(edadSpinner);
+        panelPersonal.add(new JLabel("País:"));
+        panelPersonal.add(paisCombo);
+        panelPersonal.add(new JLabel("Ingreso mensual:"));
+        panelPersonal.add(ingresoField);
+
+        JCheckBox recibirBoletin = new JCheckBox("Recibir boletín");
+        panelPersonal.add(recibirBoletin);
+
+        // Pestaña: Preferencias
+        JPanel panelPreferencias = new JPanel();
+        panelPreferencias.setLayout(new GridLayout(4, 2));
+
+        JRadioButton masculino = new JRadioButton("Masculino");
+        JRadioButton femenino = new JRadioButton("Femenino");
+        JRadioButton otro = new JRadioButton("Otro");
+        ButtonGroup grupoGenero = new ButtonGroup();
+        grupoGenero.add(masculino);
+        grupoGenero.add(femenino);
+        grupoGenero.add(otro);
+
+        String[] hobbies = {"Lectura", "Deportes", "Videojuegos", "Música"};
+        JList<String> listaHobbies = new JList<>(hobbies);
+        listaHobbies.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        JScrollPane scrollHobbies = new JScrollPane(listaHobbies);
+
+        panelPreferencias.add(new JLabel("Género:"));
+        panelPreferencias.add(masculino);
+        panelPreferencias.add(new JLabel(""));
+        panelPreferencias.add(femenino);
+        panelPreferencias.add(new JLabel(""));
+        panelPreferencias.add(otro);
+        panelPreferencias.add(new JLabel("Hobbies:"));
+        panelPreferencias.add(scrollHobbies);
+
+        // --- Tabla de resumen ---
+        String[] columnas = {"Nombre", "Edad", "País", "Género", "Ingreso"};
+        modeloTabla = new DefaultTableModel(columnas, 0);
+        tabla = new JTable(modeloTabla);
+        JScrollPane tablaScroll = new JScrollPane(tabla);
+
+        // --- Botón de registrar ---
+        JButton registrarBtn = new JButton("Registrar");
+        registrarBtn.addActionListener(e -> {
+            String nombre = nombreField.getText();
+            int edad = (int) edadSpinner.getValue();
+            String pais = (String) paisCombo.getSelectedItem();
+            String genero = masculino.isSelected() ? "Masculino" :
+                    femenino.isSelected() ? "Femenino" :
+                    otro.isSelected() ? "Otro" : "Sin definir";
+            String ingreso = ingresoField.getText();
+
+            modeloTabla.addRow(new Object[]{nombre, edad, pais, genero, ingreso});
+        });
+
+        // --- Composición final ---
+        tabs.add("Información Personal", panelPersonal);
+        tabs.add("Preferencias", panelPreferencias);
+
+        JPanel contenido = new JPanel(new BorderLayout());
+        contenido.add(panelSuperior, BorderLayout.NORTH);
+        contenido.add(tabs, BorderLayout.CENTER);
+        contenido.add(registrarBtn, BorderLayout.SOUTH);
+
+        JPanel principal = new JPanel(new BorderLayout());
+        principal.add(contenido, BorderLayout.NORTH);
+        principal.add(tablaScroll, BorderLayout.CENTER);
+
+        // Listener para mostrar u ocultar instrucciones
+        verEditor.addActionListener(e ->
+                panelSuperior.setVisible(verEditor.isSelected())
+        );
+
+        setContentPane(principal);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new FormularioSwingIntegrado().setVisible(true));
+    }
+}
